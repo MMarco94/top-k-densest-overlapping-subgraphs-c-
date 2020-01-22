@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" serverName="WSL (d51e98cc-469c-4674-acc2-ba6ae67fbb64)">
+    <serverData>
+      <paths name="AWS (b1dd9c78-d034-4871-9a1b-7e7fc5b9b13f)">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/tmp/c++" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="FEMA (097e5543-24c0-422a-8560-4c6cd5ce9ac5)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="WSL (d51e98cc-469c-4674-acc2-ba6ae67fbb64)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
