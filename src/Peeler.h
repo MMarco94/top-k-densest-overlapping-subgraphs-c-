@@ -110,7 +110,7 @@ class Peeler {
 		template<typename F1, typename F2>
 		void forEachSubGraphs(Vertex vertex, F1 sg, F2 f) {
 			for (int i = 0; i < this->subGraphs.size(); i++) {
-				auto &subGraph = this->subGraphs[i];
+				const auto &subGraph = this->subGraphs[i];
 				if (subGraph.contains(vertex)) {
 					sg(subGraph, i);
 					for (int v = 0; v < this->graph->size; v++) {

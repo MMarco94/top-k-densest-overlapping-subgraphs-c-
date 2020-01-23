@@ -4,10 +4,7 @@
 #ifndef C___GRAPH_H
 #define C___GRAPH_H
 
-#include <stdexcept>
-#include <utility>
 #include <vector>
-#include <bits/shared_ptr.h>
 #include <memory>
 
 class Vertex {
@@ -49,7 +46,7 @@ class Graph {
 		const std::vector<Edge> &edges;
 		std::vector<std::vector<Edge>> edgesMap;
 
-	private :
+	public:
 		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), edgesMap(size) {
 			for (auto &e : this->edges) {
 				this->edgesMap[e.a.id].emplace_back(e);
@@ -57,7 +54,6 @@ class Graph {
 			}
 		}
 
-	public:
 		static std::shared_ptr<Graph> getInstance(int size, const std::vector<Edge> &edges) {
 			return std::make_shared<Graph>(size, edges);
 		}
@@ -72,7 +68,8 @@ class SubGraph {
 		SubGraph(std::shared_ptr<Graph> parent) :
 				size(parent->size),
 				parent(std::move(parent)),
-				verticesMask(this->size, true) {}
+				verticesMask(this->size, true) {
+		}
 
 		SubGraph(std::shared_ptr<Graph> parent, std::vector<bool> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
 
