@@ -2,6 +2,7 @@
 #include <vector>
 #include <sstream>
 #include <fstream>
+#include <chrono>
 #include "GraphTranslator.h"
 #include "DOS.h"
 
@@ -38,7 +39,10 @@ int main() {
 	const auto &edges = parseEdges(dataset);
 	const GraphTranslator<int> translator(labels, edges);
 
+	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	const auto &subGraphs = DOS(translator.graph, 0.25).getOverlappingSubGraphs(10);
+	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+	std::cout << "Took = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs" << std::endl;
 
 	for (auto &sg : subGraphs) {
 		std::cout << sg.size << ": ";

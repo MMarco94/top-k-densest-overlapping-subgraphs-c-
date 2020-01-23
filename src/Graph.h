@@ -63,32 +63,27 @@ class SubGraph {
 	public:
 		std::shared_ptr<Graph> parent;
 		int size;
-		std::vector<bool> verticesMask;
+		//TODO: investigate using SIMD and vector<bool>
+		std::vector<std::uint8_t> verticesMask;
 
 		SubGraph(std::shared_ptr<Graph> parent) :
 				parent(std::move(parent)),
 				size(this->parent->size),
-				verticesMask(size, true) {
+				verticesMask(size, 1) {
 		}
 
-		SubGraph(std::shared_ptr<Graph> parent, std::vector<bool> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
+		SubGraph(std::shared_ptr<Graph> parent, std::vector<std::uint8_t> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
 
-		[[nodiscard]] SubGraph clone() const {//TODO: check copy
-			return SubGraph(this->parent, this->verticesMask, this->size);
-		}
-
-		[[nodiscard]] bool contains(Vertex vertex) const {
+		[[nodiscard]] bool contains(const Vertex vertex) const {
 			return this->verticesMask[vertex.id];
 		}
 
-		void remove(Vertex vertex) {
-			if (!this->verticesMask[vertex.id]) { throw std::logic_error("Vertex not in Subgraph"); }
+		void remove(const Vertex vertex) {
 			this->verticesMask[vertex.id] = false;
 			this->size--;
 		}
 
-		void add(Vertex vertex) {
-			if (this->verticesMask[vertex.id]) { throw std::logic_error("Vertex already in Subgraph"); }
+		void add(const Vertex vertex) {
 			this->verticesMask[vertex.id] = true;
 			this->size++;
 		}

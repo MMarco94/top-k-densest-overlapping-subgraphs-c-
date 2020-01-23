@@ -21,7 +21,7 @@ class BestSubGraphFinder {
 
 		void registerSubGraph(const SubGraph &sg, double score) {
 			if (this->bestSubGraphScore < score) {
-				this->bestSubGraph = sg.clone();
+				this->bestSubGraph = sg;
 				this->bestSubGraphScore = score;
 			}
 		}
@@ -60,15 +60,14 @@ class DOS {
 			BestSubGraphFinder finder(p.candidate);
 			while (p.candidate.size > 3) {
 				p.removeWorstVertex();
-				const auto &pair = this->marginalGainModified(p, subGraphs);
-				finder.registerSubGraph(pair.first, pair.second);
+				this->marginalGainModified(finder, p, subGraphs);
 			}
 			return finder.bestSubGraph;
 		}
 
-		[[nodiscard]] std::pair<SubGraph, double> marginalGainModified(Peeler &peeler, const std::vector<SubGraph> &subGraphs) const {
+		void marginalGainModified(BestSubGraphFinder &finder, Peeler &peeler, const std::vector<SubGraph> &subGraphs) const {
 			//TODO: check if in subGraphs
-			return std::make_pair(peeler.candidate, this->marginalGain(peeler, subGraphs));
+			finder.registerSubGraph(peeler.candidate, this->marginalGain(peeler, subGraphs));
 		}
 };
 

@@ -58,8 +58,9 @@ class Peeler {
 		void removeWorstVertex() {
 			Vertex worst(-1);
 			double worstWeight = std::numeric_limits<double>::max();
-			for (int i = 0; i < this->graph->size; i++) {
-				Vertex v = Vertex(i);
+			int size = this->graph->size;
+			for (int i = 0; i < size; i++) {
+				const auto &v = Vertex(i);
 				if (candidate.contains(v)) {
 					double w = this->weights[i];
 					if (w < worstWeight) {
@@ -108,12 +109,17 @@ class Peeler {
 
 		template<typename F1, typename F2>
 		void forEachSubGraphs(Vertex vertex, F1 sg, F2 f) {
-			for (int i = 0; i < this->subGraphs.size(); i++) {
+			unsigned long sgSize = this->subGraphs.size();
+			int gSize = this->graph->size;
+			for (int i = 0; i < sgSize; i++) {
 				const auto &subGraph = this->subGraphs[i];
 				if (subGraph.contains(vertex)) {
 					sg(subGraph, i);
-					for (int v = 0; v < this->graph->size; v++) {
-						f(subGraph, Vertex(v));
+					for (int v = 0; v < gSize; v++) {
+						const Vertex &vv = Vertex(v);
+						if (subGraph.contains(vv)) {
+							f(subGraph, vv);
+						}
 					}
 				}
 			}
