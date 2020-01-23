@@ -34,7 +34,7 @@ class GraphTranslator {
 	private:
 		template<typename V>
 		static int indexOf(const std::vector<V> &values, const V &value) {
-			for (int i = 0; i < value.size(); i++) {
+			for (int i = 0; i < values.size(); i++) {
 				if (values[i] == value) {
 					return i;
 				}

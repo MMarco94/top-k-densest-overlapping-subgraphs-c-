@@ -82,10 +82,10 @@ class Peeler {
 			this->candidateEdges += this->degrees[vertex.id];
 			forEachSubGraphs(
 					vertex,
-					[this](SubGraph &sg, int index) {
+					[this](const SubGraph &sg, int index) {
 						this->intersectionsSize[index]++;
 					},
-					[this](SubGraph &sg, Vertex v) {
+					[this](const SubGraph &sg, Vertex v) {
 						weights[v.id] -= 4 * this->lambda / sg.size;
 					}
 			);

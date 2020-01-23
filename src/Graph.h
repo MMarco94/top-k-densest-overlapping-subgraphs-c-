@@ -62,13 +62,13 @@ class Graph {
 class SubGraph {
 	public:
 		std::shared_ptr<Graph> parent;
-		std::vector<bool> verticesMask;
 		int size;
+		std::vector<bool> verticesMask;
 
 		SubGraph(std::shared_ptr<Graph> parent) :
-				size(parent->size),
 				parent(std::move(parent)),
-				verticesMask(this->size, true) {
+				size(this->parent->size),
+				verticesMask(size, true) {
 		}
 
 		SubGraph(std::shared_ptr<Graph> parent, std::vector<bool> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
