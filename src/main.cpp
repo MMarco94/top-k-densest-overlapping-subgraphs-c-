@@ -1,8 +1,8 @@
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <fstream>
 #include <chrono>
+#include <algorithm>
 #include "GraphTranslator.h"
 #include "DOS.h"
 
@@ -46,11 +46,17 @@ int main() {
 
 	for (auto &sg : subGraphs) {
 		std::cout << sg.size << ": ";
+		std::vector<int> translatedLabels;
+		translatedLabels.reserve(sg.size);
 		for (int i = 0; i < translator.graph->size; i++) {
 			const Vertex &v = Vertex(i);
 			if (sg.contains(v)) {
-				std::cout << translator.getInitialVertex(v) << ", ";
+				translatedLabels.emplace_back(translator.getInitialVertex(v));
 			}
+		}
+		std::sort(translatedLabels.begin(), translatedLabels.end());
+		for (auto &l : translatedLabels) {
+			std::cout << l << ", ";
 		}
 		std::cout << std::endl;
 	}

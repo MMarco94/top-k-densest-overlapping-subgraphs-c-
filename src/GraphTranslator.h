@@ -15,6 +15,7 @@ class GraphTranslator {
 		std::vector<Edge> outEdges;
 	public:
 		std::shared_ptr<Graph> graph;
+
 		GraphTranslator(const std::vector<T> &vertices, const std::vector<std::pair<T, T>> &edges) :
 				outToIn(vertices), outEdges() {
 			this->outEdges.reserve(edges.size());
@@ -34,12 +35,7 @@ class GraphTranslator {
 	private:
 		template<typename V>
 		static int indexOf(const std::vector<V> &values, const V &value) {
-			for (int i = 0; i < values.size(); i++) {
-				if (values[i] == value) {
-					return i;
-				}
-			}
-			return -1;
+			return std::find(values.begin(), values.end(), value) - values.begin();
 		}
 };
 
