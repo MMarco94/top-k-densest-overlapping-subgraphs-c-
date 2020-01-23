@@ -27,7 +27,7 @@ class GraphTranslator {
 			this->graph = Graph::getInstance(vertices.size(), this->outEdges);
 		}
 
-		T getInitialVertex(Vertex vertex) {
+		T getInitialVertex(Vertex vertex) const {
 			return this->outToIn[vertex.id];
 		}
 

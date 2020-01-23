@@ -76,17 +76,16 @@ class Peeler {
 			this->candidateEdges -= this->degrees[vertex.id];
 			candidate.remove(vertex);
 			forEachConnectedVertex(vertex, [this](Vertex v, int vc) {
-				this->weights[vc] += vc;
-				this->degrees[vc] += vc;
+				this->weights[v.id] -= vc;
+				this->degrees[v.id] -= vc;
 			});
-			this->candidateEdges += this->degrees[vertex.id];
 			forEachSubGraphs(
 					vertex,
 					[this](const SubGraph &sg, int index) {
-						this->intersectionsSize[index]++;
+						this->intersectionsSize[index]--;
 					},
-					[this](const SubGraph &sg, Vertex v) {
-						weights[v.id] -= 4 * this->lambda / sg.size;
+					[this](const SubGraph &g, Vertex v) {
+						weights[v.id] += 4 * this->lambda / g.size;
 					}
 			);
 		}

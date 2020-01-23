@@ -14,7 +14,7 @@
 
 class BestSubGraphFinder {
 	public:
-		SubGraph &bestSubGraph;
+		SubGraph bestSubGraph;
 		double bestSubGraphScore;
 
 		explicit BestSubGraphFinder(SubGraph &sg) : bestSubGraph(sg), bestSubGraphScore(std::numeric_limits<double>::min()) {}
@@ -22,6 +22,7 @@ class BestSubGraphFinder {
 		void registerSubGraph(const SubGraph &sg, double score) {
 			if (this->bestSubGraphScore < score) {
 				this->bestSubGraph = sg.clone();
+				this->bestSubGraphScore = score;
 			}
 		}
 };
@@ -51,7 +52,7 @@ class DOS {
 				auto &sg = subGraphs[i];
 				sum += MetricDistance::getDistance(peeler.candidate, sg, peeler.getIntersectionSize(i));
 			}
-			return peeler.getCandidateDensity() / 2 * this->lambda * sum;
+			return peeler.getCandidateDensity() / 2 + this->lambda * sum;
 		}
 
 		[[nodiscard]] SubGraph peel(const std::vector<SubGraph> &subGraphs) const {

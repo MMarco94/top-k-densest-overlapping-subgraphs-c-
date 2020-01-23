@@ -7,7 +7,7 @@
 
 std::vector<int> parseLabels(const std::string &fileName) {
 	std::ifstream file;
-	file.open("src/test/resources" + fileName + ".labels");
+	file.open("res/" + fileName + ".labels");
 	std::string s;
 	std::vector<int> ret;
 	while (std::getline(file, s)) {
@@ -18,7 +18,7 @@ std::vector<int> parseLabels(const std::string &fileName) {
 
 std::vector<std::pair<int, int>> parseEdges(const std::string &fileName) {
 	std::ifstream file;
-	file.open("src/test/resources" + fileName + ".edgelist");
+	file.open("res/" + fileName + ".edgelist");
 	std::string s;
 	std::vector<std::pair<int, int>> ret;
 	int e1;
@@ -40,8 +40,15 @@ int main() {
 
 	const auto &subGraphs = DOS(translator.graph, 0.25).getOverlappingSubGraphs(10);
 
-	for (auto &sg:subGraphs) {
-		std::cout << sg.size << std::endl;
+	for (auto &sg : subGraphs) {
+		std::cout << sg.size << ": ";
+		for (int i = 0; i < translator.graph->size; i++) {
+			const Vertex &v = Vertex(i);
+			if (sg.contains(v)) {
+				std::cout << translator.getInitialVertex(v) << ", ";
+			}
+		}
+		std::cout << std::endl;
 	}
 
 	return 0;
