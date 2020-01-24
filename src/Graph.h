@@ -32,10 +32,8 @@ class Edge {
 		[[nodiscard]] Vertex otherVertex(Vertex v) const {
 			if (a == v) {
 				return b;
-			} else if (b == v) {
-				return a;
 			} else {
-				throw std::logic_error("Vertex not in this edge");
+				return a;
 			}
 		}
 };
@@ -66,13 +64,20 @@ class SubGraph {
 		//TODO: investigate using SIMD and vector<bool>
 		std::vector<std::uint8_t> verticesMask;
 
-		SubGraph(std::shared_ptr<Graph> parent) :
+		explicit SubGraph(std::shared_ptr<Graph> parent) :
 				parent(std::move(parent)),
 				size(this->parent->size),
 				verticesMask(size, 1) {
 		}
 
 		SubGraph(std::shared_ptr<Graph> parent, std::vector<std::uint8_t> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
+
+	/*	//copy
+		SubGraph(const SubGraph &sg) {
+			this->parent = sg.parent;
+			this->size = sg.size;
+			this->verticesMask = sg.verticesMask;
+		}*/
 
 		[[nodiscard]] bool contains(const Vertex vertex) const {
 			return this->verticesMask[vertex.id];

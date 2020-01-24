@@ -7,6 +7,7 @@
 
 #include <utility>
 #include "Graph.h"
+#include "MinHeap.h"
 
 class Peeler {
 	private:
@@ -18,6 +19,40 @@ class Peeler {
 		std::vector<int> degrees;
 		std::vector<double> weights;
 		std::vector<int> intersectionsSize;
+		std::unique_ptr<MinHeap> vertexPriorityQueue;
+
+		static std::vector<int> prepareDegrees(const std::shared_ptr<Graph> &graph) {
+			int gSize = graph->size;
+			std::vector<int> ret(gSize);
+			for (int i = 0; i < gSize; i++) {
+				ret[i] = graph->edgesMap[i].size();
+			}
+			return ret;
+		}
+
+		static std::vector<double> prepareWeights(const std::shared_ptr<Graph> &graph, const std::vector<SubGraph> &subGraphs, double lambda, const std::vector<int> &degrees) {
+			int gSize = graph->size;
+			std::vector<double> ret(gSize);
+			for (int i = 0; i < gSize; i++) {
+				int cnt = 0;
+				for (auto &sg:subGraphs) {
+					if (sg.contains(Vertex(i))) {
+						cnt++;
+					}
+				}
+				ret[i] = degrees[i] - 4 * lambda * cnt;
+			}
+			return ret;
+		}
+
+		static std::vector<int> prepareIntersections(const std::vector<SubGraph> &subGraphs) {
+			std::vector<int> ret(subGraphs.size());
+			for (int i = 0; i < subGraphs.size(); i++) {
+				ret[i] = subGraphs[i].size;
+			}
+			return ret;
+		}
+
 	public:
 		SubGraph candidate;
 
@@ -27,24 +62,10 @@ class Peeler {
 				lambda(lambda),
 				candidate(this->graph),
 				candidateEdges(this->graph->edges.size()),
-				degrees(this->graph->size),
-				weights(this->graph->size),
-				intersectionsSize(this->subGraphs.size()) {
-			for (int i = 0; i < this->graph->size; i++) {
-				degrees[i] = this->graph->edgesMap[i].size();
-
-				int cnt = 0;
-				for (auto &sg:subGraphs) {
-					if (sg.contains(Vertex(i))) {
-						cnt++;
-					}
-				}
-				weights[i] = degrees[i] - 4 * lambda * cnt;
-			}
-
-			for (int i = 0; i < this->subGraphs.size(); i++) {
-				intersectionsSize[i] = subGraphs[i].size;
-			}
+				degrees(Peeler::prepareDegrees(this->graph)),
+				weights(Peeler::prepareWeights(this->graph, this->subGraphs, lambda, this->degrees)),
+				intersectionsSize(Peeler::prepareIntersections(this->subGraphs)) {
+			vertexPriorityQueue = std::make_unique<MinHeap>(this->graph->size, this->weights, this->candidate.verticesMask);
 		}
 
 		[[nodiscard]] double getCandidateDensity() const {
@@ -56,26 +77,31 @@ class Peeler {
 		}
 
 		void removeWorstVertex() {
-			Vertex worst(-1);
-			double worstWeight = std::numeric_limits<double>::max();
-			int size = this->graph->size;
-			for (int i = 0; i < size; i++) {
-				const auto &v = Vertex(i);
-				if (candidate.contains(v)) {
-					double w = this->weights[i];
-					if (w < worstWeight) {
-						worstWeight = w;
-						worst = v;
+			if (true) {
+				this->remove(this->vertexPriorityQueue->head());
+			} else {
+				Vertex worst(-1);
+				double worstWeight = std::numeric_limits<double>::max();
+				int size = this->graph->size;
+				for (int i = 0; i < size; i++) {
+					const auto &v = Vertex(i);
+					if (candidate.contains(v)) {
+						double w = this->weights[i];
+						if (w < worstWeight) {
+							worstWeight = w;
+							worst = v;
+						}
 					}
 				}
+				this->remove(worst);
 			}
-
-			this->remove(worst);
 		}
 
 		void remove(Vertex vertex) {
 			this->candidateEdges -= this->degrees[vertex.id];
-			candidate.remove(vertex);
+			this->editWeight(vertex, [this, vertex]() {
+				this->candidate.remove(vertex);
+			});
 			forEachConnectedVertex(vertex, [this](Vertex v, int vc) {
 				this->weights[v.id] -= vc;
 				this->degrees[v.id] -= vc;
@@ -90,8 +116,11 @@ class Peeler {
 					}
 			);
 		}
+
 		void add(Vertex vertex) {
-			candidate.add(vertex);
+			this->editWeight(vertex, [this, vertex]() {
+				this->candidate.add(vertex);
+			});
 			forEachConnectedVertex(vertex, [this](Vertex v, int vc) {
 				this->weights[v.id] += vc;
 				this->degrees[v.id] += vc;
@@ -115,12 +144,16 @@ class Peeler {
 			for (auto &e:edges) {
 				auto other = e.otherVertex(vertex);
 				if (this->candidate.contains(other)) {
-					f(other, 1);
+					this->editWeight(vertex, [f, other]() {
+						f(other, 1);
+					});
 					vertexCount++;
 				}
 			}
 			if (vertexCount > 0) {
-				f(vertex, vertexCount);
+				this->editWeight(vertex, [f, vertex, vertexCount]() {
+					f(vertex, vertexCount);
+				});
 			}
 		}
 
@@ -135,11 +168,19 @@ class Peeler {
 					for (int v = 0; v < gSize; v++) {
 						const Vertex &vv = Vertex(v);
 						if (subGraph.contains(vv)) {
-							f(subGraph, vv);
+							editWeight(vv, [f, &subGraph, vv]() {
+								f(subGraph, vv);
+							});
 						}
 					}
 				}
 			}
+		}
+
+		template<typename T>
+		void editWeight(Vertex vertex, T f) {
+			f();
+			this->vertexPriorityQueue->notifyComparisonChanged(vertex);
 		}
 };
 
