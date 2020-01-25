@@ -21,6 +21,9 @@ class Peeler {
 		std::vector<int> intersectionsSize;
 		std::unique_ptr<MinHeap> vertexPriorityQueue;
 
+		Vertex temporaryVertex = Vertex(-1);
+		bool temporaryIsAdd = false;
+
 		static std::vector<int> prepareDegrees(const std::shared_ptr<Graph> &graph) {
 			int gSize = graph->size;
 			std::vector<int> ret(gSize);
@@ -78,7 +81,7 @@ class Peeler {
 
 		void removeWorstVertex() {
 			if (true) {
-				this->remove(this->vertexPriorityQueue->head());
+				this->remove(this->vertexPriorityQueue->head(), true);
 			} else {
 				Vertex worst(-1);
 				double worstWeight = std::numeric_limits<double>::max();
@@ -93,21 +96,44 @@ class Peeler {
 						}
 					}
 				}
-				this->remove(worst);
+				this->remove(worst, true);
 			}
 		}
 
-		void remove(Vertex vertex) {
+		void removeTemporary(Vertex vertex) {
+			this->temporaryVertex = vertex;
+			this->temporaryIsAdd = false;
+			remove(vertex, false);
+		}
+
+		void addTemporary(Vertex vertex) {
+			this->temporaryVertex = vertex;
+			this->temporaryIsAdd = true;
+			add(vertex, false);
+		}
+
+		void restoreTemporary() {
+			if (this->temporaryIsAdd) {
+				this->remove(this->temporaryVertex, false);
+			} else {
+				this->add(this->temporaryVertex, false);
+			}
+			this->temporaryVertex = -1;
+		}
+
+	private:
+		void remove(Vertex vertex, bool updateQueue) {
 			this->candidateEdges -= this->degrees[vertex.id];
-			this->editWeight(vertex, [this, vertex]() {
+			this->editWeight(vertex, updateQueue, [this, vertex]() {
 				this->candidate.remove(vertex);
 			});
-			forEachConnectedVertex(vertex, [this](Vertex v, int vc) {
+			forEachConnectedVertex(vertex, updateQueue, [this](Vertex v, int vc) {
 				this->weights[v.id] -= vc;
 				this->degrees[v.id] -= vc;
 			});
 			forEachSubGraphs(
 					vertex,
+					updateQueue,
 					[this](const SubGraph &sg, int index) {
 						this->intersectionsSize[index]--;
 					},
@@ -117,17 +143,18 @@ class Peeler {
 			);
 		}
 
-		void add(Vertex vertex) {
-			this->editWeight(vertex, [this, vertex]() {
+		void add(Vertex vertex, bool updateQueue) {
+			this->editWeight(vertex, updateQueue, [this, vertex]() {
 				this->candidate.add(vertex);
 			});
-			forEachConnectedVertex(vertex, [this](Vertex v, int vc) {
+			forEachConnectedVertex(vertex, updateQueue, [this](Vertex v, int vc) {
 				this->weights[v.id] += vc;
 				this->degrees[v.id] += vc;
 			});
 			this->candidateEdges += this->degrees[vertex.id];
 			forEachSubGraphs(
 					vertex,
+					updateQueue,
 					[this](const SubGraph &sg, int index) {
 						this->intersectionsSize[index]++;
 					},
@@ -138,27 +165,27 @@ class Peeler {
 		}
 
 		template<typename F>
-		void forEachConnectedVertex(Vertex vertex, F f) {
+		void forEachConnectedVertex(Vertex vertex, bool updateQueue, F f) {
 			int vertexCount = 0;
 			auto &edges = this->graph->edgesMap[vertex.id];
 			for (auto &e:edges) {
 				auto other = e.otherVertex(vertex);
 				if (this->candidate.contains(other)) {
-					this->editWeight(vertex, [f, other]() {
+					this->editWeight(vertex, updateQueue, [f, other]() {
 						f(other, 1);
 					});
 					vertexCount++;
 				}
 			}
 			if (vertexCount > 0) {
-				this->editWeight(vertex, [f, vertex, vertexCount]() {
+				this->editWeight(vertex, updateQueue, [f, vertex, vertexCount]() {
 					f(vertex, vertexCount);
 				});
 			}
 		}
 
 		template<typename F1, typename F2>
-		void forEachSubGraphs(Vertex vertex, F1 sg, F2 f) {
+		void forEachSubGraphs(Vertex vertex, bool updateQueue, F1 sg, F2 f) {
 			unsigned long sgSize = this->subGraphs.size();
 			int gSize = this->graph->size;
 			for (int i = 0; i < sgSize; i++) {
@@ -168,7 +195,7 @@ class Peeler {
 					for (int v = 0; v < gSize; v++) {
 						const Vertex &vv = Vertex(v);
 						if (subGraph.contains(vv)) {
-							editWeight(vv, [f, &subGraph, vv]() {
+							editWeight(vv, updateQueue, [f, &subGraph, vv]() {
 								f(subGraph, vv);
 							});
 						}
@@ -178,9 +205,11 @@ class Peeler {
 		}
 
 		template<typename T>
-		void editWeight(Vertex vertex, T f) {
+		void editWeight(Vertex vertex, bool updateQueue, T f) {
 			f();
-			this->vertexPriorityQueue->notifyComparisonChanged(vertex);
+			if (updateQueue) {
+				this->vertexPriorityQueue->notifyComparisonChanged(vertex);
+			}
 		}
 };
 

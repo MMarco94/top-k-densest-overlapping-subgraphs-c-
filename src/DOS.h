@@ -74,13 +74,13 @@ class DOS {
 				for (int v = 0; v < gSize; v++) {
 					const Vertex &vv = Vertex(v);
 					if (candidate.contains(vv)) {
-						peeler.remove(vv);
+						peeler.removeTemporary(vv);
 						finder.registerSubGraph(candidate, this->marginalGain(peeler, subGraphs));
-						peeler.add(vv);
+						peeler.restoreTemporary();
 					} else {
-						peeler.add(vv);
+						peeler.addTemporary(vv);
 						finder.registerSubGraph(candidate, this->marginalGain(peeler, subGraphs));
-						peeler.remove(vv);
+						peeler.restoreTemporary();
 					}
 				}
 			} else {
