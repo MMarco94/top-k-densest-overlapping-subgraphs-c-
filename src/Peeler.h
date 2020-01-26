@@ -26,16 +26,18 @@ class Peeler {
 
 		static std::vector<int> prepareDegrees(const std::shared_ptr<Graph> &graph) {
 			int gSize = graph->size;
-			std::vector<int> ret(gSize);
+			std::vector<int> ret;
+			ret.reserve(gSize);
 			for (int i = 0; i < gSize; i++) {
-				ret[i] = graph->edgesMap[i].size();
+				ret.emplace_back(graph->edgesMap[i].size());
 			}
 			return ret;
 		}
 
 		static std::vector<double> prepareWeights(const std::shared_ptr<Graph> &graph, const std::vector<SubGraph> &subGraphs, double lambda, const std::vector<int> &degrees) {
 			int gSize = graph->size;
-			std::vector<double> ret(gSize);
+			std::vector<double> ret;
+			ret.reserve(gSize);
 			for (int i = 0; i < gSize; i++) {
 				int cnt = 0;
 				for (auto &sg:subGraphs) {
@@ -43,15 +45,16 @@ class Peeler {
 						cnt++;
 					}
 				}
-				ret[i] = degrees[i] - 4 * lambda * cnt;
+				ret.emplace_back(degrees[i] - 4 * lambda * cnt);
 			}
 			return ret;
 		}
 
 		static std::vector<int> prepareIntersections(const std::vector<SubGraph> &subGraphs) {
-			std::vector<int> ret(subGraphs.size());
-			for (int i = 0; i < subGraphs.size(); i++) {
-				ret[i] = subGraphs[i].size;
+			std::vector<int> ret;
+			ret.reserve(subGraphs.size());
+			for (const auto &subGraph : subGraphs) {
+				ret.emplace_back(subGraph.size);
 			}
 			return ret;
 		}
@@ -81,7 +84,8 @@ class Peeler {
 
 		void removeWorstVertex() {
 			if (true) {
-				this->remove(this->vertexPriorityQueue->head(), true);
+				const Vertex &worst = this->vertexPriorityQueue->head();
+				this->remove(worst, true);
 			} else {
 				Vertex worst(-1);
 				double worstWeight = std::numeric_limits<double>::max();

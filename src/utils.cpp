@@ -8,6 +8,8 @@
 #include <vector>
 #include <algorithm>
 
+using VectorizableBool=std::uint8_t;
+
 template<typename T>
 bool contains(const std::vector<T> &vector, const T &value) {
 	return std::find(vector.begin(), vector.end(), value) != vector.end();

@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <memory>
+#include "utils.cpp"
 
 class Vertex {
 	public:
@@ -30,7 +31,7 @@ class Edge {
 		Edge(const Vertex &a, const Vertex &b) : a(a), b(b) {}
 
 		[[nodiscard]] Vertex otherVertex(Vertex v) const {
-			if (a == v) {
+			if (a.id == v.id) {
 				return b;
 			} else {
 				return a;
@@ -61,8 +62,7 @@ class SubGraph {
 	public:
 		std::shared_ptr<Graph> parent;
 		int size;
-		//TODO: investigate using SIMD and vector<bool>
-		std::vector<std::uint8_t> verticesMask;
+		std::vector<VectorizableBool> verticesMask;
 
 		explicit SubGraph(std::shared_ptr<Graph> parent) :
 				parent(std::move(parent)),
@@ -70,7 +70,7 @@ class SubGraph {
 				verticesMask(size, 1) {
 		}
 
-		SubGraph(std::shared_ptr<Graph> parent, std::vector<std::uint8_t> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
+		SubGraph(std::shared_ptr<Graph> parent, std::vector<VectorizableBool> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
 
 	/*	//copy
 		SubGraph(const SubGraph &sg) {

@@ -8,15 +8,16 @@
 #include <cstdint>
 #include <vector>
 #include "Graph.h"
+#include "utils.cpp"
 
 class MinHeap {
 		const int size;
 		const std::vector<double> &backingWeights;
-		const std::vector<std::uint8_t> &isNotRemoved;
+		const std::vector<VectorizableBool> &isNotRemoved;
 		std::vector<Vertex> heap;
 		std::vector<int> reverseIndexes;
 	public:
-		MinHeap(const int size, const std::vector<double> &backingWeights, const std::vector<std::uint8_t> &isNotRemoved) : size(size), backingWeights(backingWeights), isNotRemoved(isNotRemoved) {
+		MinHeap(const int size, const std::vector<double> &backingWeights, const std::vector<VectorizableBool> &isNotRemoved) : size(size), backingWeights(backingWeights), isNotRemoved(isNotRemoved) {
 			this->heap.reserve(size);
 			this->reverseIndexes.reserve(size);
 			for (int i = 0; i < size; i++) {
@@ -41,7 +42,7 @@ class MinHeap {
 	private:
 
 		double getWeight(Vertex pos) {
-			if (isNotRemoved[pos.id]) {
+			if (this->isNotRemoved[pos.id]) {
 				return this->backingWeights[pos.id];
 			} else {
 				return std::numeric_limits<double>::max();
@@ -61,19 +62,19 @@ class MinHeap {
 		}
 
 		void swap(int a, int b) {
-			Vertex ha = heap[a];
-			Vertex hb = heap[b];
-			int tmp = reverseIndexes[ha.id];
-			reverseIndexes[ha.id] = reverseIndexes[hb.id];
-			reverseIndexes[hb.id] = tmp;
-			heap[a] = hb;
-			heap[b] = ha;
+			Vertex ha = this->heap[a];
+			Vertex hb = this->heap[b];
+			int tmp = this->reverseIndexes[ha.id];
+			this->reverseIndexes[ha.id] = this->reverseIndexes[hb.id];
+			this->reverseIndexes[hb.id] = tmp;
+			this->heap[a] = hb;
+			this->heap[b] = ha;
 		}
 
 		void bubbleUp(int pos) {
 			int current = pos;
-			double currentWeight = this->getWeight(heap[pos]);
-			while (current > 0 && getWeight(heap[MinHeap::parent(pos)]) > currentWeight) {
+			double currentWeight = this->getWeight(this->heap[pos]);
+			while (current > 0 && getWeight(this->heap[MinHeap::parent(pos)]) > currentWeight) {
 				swap(current, MinHeap::parent(current));
 				current = MinHeap::parent(current);
 			}
@@ -92,13 +93,12 @@ class MinHeap {
 			double leftWeight = hasLeftChild ? this->getWeight(this->heap[leftChild]) : -1.0;
 			double rightWeight = hasRightChild ? this->getWeight(this->heap[rightChild]) : -1.0;
 			if ((hasLeftChild && posWeight > leftWeight) || (hasRightChild && posWeight > rightWeight)) {
-
 				if (hasRightChild && leftWeight > rightWeight) {
-					swap(pos, rightChild);
-					minHeapify(rightChild, posWeight);
+					this->swap(pos, rightChild);
+					this->minHeapify(rightChild, posWeight);
 				} else if (hasLeftChild) {
-					swap(pos, leftChild);
-					minHeapify(leftChild, posWeight);
+					this->swap(pos, leftChild);
+					this->minHeapify(leftChild, posWeight);
 				} else throw std::logic_error("Illegal state");
 			}
 		}

@@ -21,7 +21,7 @@ class BestSubGraphFinder {
 				subGraphs(subGraphs), bestSubGraph(sg), bestSubGraphScore(std::numeric_limits<double>::min()) {}
 
 		void registerSubGraph(const SubGraph &sg, double score) {
-			if (this->bestSubGraphScore < score && !contains(this->subGraphs, sg)) {
+			if (score > this->bestSubGraphScore && !contains(this->subGraphs, sg)) {
 				this->bestSubGraph = sg;
 				this->bestSubGraphScore = score;
 			}
