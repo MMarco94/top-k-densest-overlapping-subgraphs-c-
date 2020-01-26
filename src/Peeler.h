@@ -175,7 +175,7 @@ class Peeler {
 			for (auto &e:edges) {
 				auto other = e.otherVertex(vertex);
 				if (this->candidate.contains(other)) {
-					this->editWeight(vertex, updateQueue, [f, other]() {
+					this->editWeight(other, updateQueue, [f, other]() {
 						f(other, 1);
 					});
 					vertexCount++;
