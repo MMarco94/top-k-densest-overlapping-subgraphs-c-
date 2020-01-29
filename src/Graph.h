@@ -63,6 +63,9 @@ class SubGraph {
 		std::shared_ptr<Graph> parent;
 		int size;
 		std::vector<VectorizableBool> verticesMask;
+	private:
+		std::vector<Vertex> materializedVertices;
+	public:
 
 		explicit SubGraph(std::shared_ptr<Graph> parent) :
 				parent(std::move(parent)),
@@ -72,12 +75,36 @@ class SubGraph {
 
 		SubGraph(std::shared_ptr<Graph> parent, std::vector<VectorizableBool> verticesMask, int size) : parent(std::move(parent)), verticesMask(std::move(verticesMask)), size(size) {}
 
-	/*	//copy
-		SubGraph(const SubGraph &sg) {
-			this->parent = sg.parent;
-			this->size = sg.size;
-			this->verticesMask = sg.verticesMask;
-		}*/
+		/*	//copy
+			SubGraph(const SubGraph &sg) {
+				this->parent = sg.parent;
+				this->size = sg.size;
+				this->verticesMask = sg.verticesMask;
+			}*/
+
+		template<typename F>
+		void forEachVertex(F f) const {
+			if (size > 0) {
+				if (this->materializedVertices.empty()) {
+					int vs = this->verticesMask.size();
+					for (int i = 0; i < vs; i++) {
+						if (this->verticesMask[i]) {
+							f(Vertex(i));
+						}
+					}
+				} else {
+					for (auto &v : this->materializedVertices) {
+						f(v);
+					}
+				}
+			}
+		}
+
+		void materializeVertices() {
+			forEachVertex([this](Vertex v) {
+				this->materializedVertices.emplace_back(v);
+			});
+		}
 
 		[[nodiscard]] bool contains(const Vertex vertex) const {
 			return this->verticesMask[vertex.id];

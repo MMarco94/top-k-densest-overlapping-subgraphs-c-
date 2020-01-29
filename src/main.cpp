@@ -39,6 +39,8 @@ int main() {
 	const auto &edges = parseEdges(dataset);
 	const GraphTranslator<int> translator(labels, edges);
 
+	std::cout << labels.size() << " vertices with " << edges.size() << " edges" << std::endl;
+
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	const auto &subGraphs = DOS(translator.graph, 0.25).getOverlappingSubGraphs(10);
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -48,12 +50,9 @@ int main() {
 		std::cout << sg.size << ": ";
 		std::vector<int> translatedLabels;
 		translatedLabels.reserve(sg.size);
-		for (int i = 0; i < translator.graph->size; i++) {
-			const Vertex &v = Vertex(i);
-			if (sg.contains(v)) {
-				translatedLabels.emplace_back(translator.getInitialVertex(v));
-			}
-		}
+		sg.forEachVertex([&translatedLabels, &translator](Vertex v) {
+			translatedLabels.emplace_back(translator.getInitialVertex(v));
+		});
 		std::sort(translatedLabels.begin(), translatedLabels.end());
 		for (auto &l : translatedLabels) {
 			std::cout << l << ", ";

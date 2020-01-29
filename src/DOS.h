@@ -40,6 +40,7 @@ class DOS {
 
 			for (int i = 0; i < subGraphsCount; i++) {
 				ret.push_back(peel(ret));
+				ret[ret.size() - 1].materializeVertices();
 			}
 
 			return ret;

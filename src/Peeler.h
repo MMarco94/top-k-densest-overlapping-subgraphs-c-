@@ -196,14 +196,11 @@ class Peeler {
 				const auto &subGraph = this->subGraphs[i];
 				if (subGraph.contains(vertex)) {
 					sg(subGraph, i);
-					for (int v = 0; v < gSize; v++) {
-						const Vertex &vv = Vertex(v);
-						if (subGraph.contains(vv)) {
-							editWeight(vv, updateQueue, [f, &subGraph, vv]() {
-								f(subGraph, vv);
-							});
-						}
-					}
+					subGraph.forEachVertex([=](const Vertex &vv){
+						editWeight(vv, updateQueue, [f, &subGraph, vv]() {
+							f(subGraph, vv);
+						});
+					});
 				}
 			}
 		}
