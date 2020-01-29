@@ -48,7 +48,7 @@ class DOS {
 
 	private:
 
-		[[nodiscard]] double marginalGain(const Peeler &peeler, const std::vector<SubGraph> &subGraphs) const {
+		[[nodiscard]] double marginalGain(const Peeler<> &peeler, const std::vector<SubGraph> &subGraphs) const {
 			double sum = 0;
 			for (int i = 0; i < subGraphs.size(); i++) {
 				auto &sg = subGraphs[i];
@@ -68,7 +68,7 @@ class DOS {
 			return finder.bestSubGraph;
 		}
 
-		void marginalGainModified(BestSubGraphFinder &finder, Peeler &peeler, const std::vector<SubGraph> &subGraphs) const {
+		void marginalGainModified(BestSubGraphFinder &finder, Peeler<> &peeler, const std::vector<SubGraph> &subGraphs) const {
 			const auto &candidate = peeler.candidate;
 			if (contains(subGraphs, candidate)) {
 				int gSize = this->graph->size;

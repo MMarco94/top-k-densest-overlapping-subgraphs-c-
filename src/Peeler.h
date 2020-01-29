@@ -7,8 +7,11 @@
 
 #include <utility>
 #include "Graph.h"
-#include "MinHeap.h"
+#include "priorityQueue/BatchMinHeap.h"
+#include "priorityQueue/LinearQueue.h"
+#include "priorityQueue/MinHeap.h"
 
+template<class T = BatchMinHeap>
 class Peeler {
 	private:
 		std::shared_ptr<Graph> graph;
@@ -19,7 +22,7 @@ class Peeler {
 		std::vector<int> degrees;
 		std::vector<double> weights;
 		std::vector<int> intersectionsSize;
-		std::unique_ptr<MinHeap> vertexPriorityQueue;
+		std::unique_ptr<T> vertexPriorityQueue;
 
 		Vertex temporaryVertex = Vertex(-1);
 		bool temporaryIsAdd = false;
@@ -71,7 +74,7 @@ class Peeler {
 				degrees(Peeler::prepareDegrees(this->graph)),
 				weights(Peeler::prepareWeights(this->graph, this->subGraphs, lambda, this->degrees)),
 				intersectionsSize(Peeler::prepareIntersections(this->subGraphs)) {
-			vertexPriorityQueue = std::make_unique<MinHeap>(this->graph->size, this->weights, this->candidate.verticesMask);
+			vertexPriorityQueue = std::make_unique<T>(this->graph->size, this->weights, this->candidate.verticesMask);
 		}
 
 		[[nodiscard]] double getCandidateDensity() const {
@@ -83,25 +86,8 @@ class Peeler {
 		}
 
 		void removeWorstVertex() {
-			if (true) {
-				const Vertex &worst = this->vertexPriorityQueue->head();
-				this->remove(worst, true);
-			} else {
-				Vertex worst(-1);
-				double worstWeight = std::numeric_limits<double>::max();
-				int size = this->graph->size;
-				for (int i = 0; i < size; i++) {
-					const auto &v = Vertex(i);
-					if (candidate.contains(v)) {
-						double w = this->weights[i];
-						if (w < worstWeight) {
-							worstWeight = w;
-							worst = v;
-						}
-					}
-				}
-				this->remove(worst, true);
-			}
+			const Vertex &worst = this->vertexPriorityQueue->head();
+			this->remove(worst, true);
 		}
 
 		void removeTemporary(Vertex vertex) {
@@ -205,8 +191,8 @@ class Peeler {
 			}
 		}
 
-		template<typename T>
-		void editWeight(Vertex vertex, bool updateQueue, T f) {
+		template<typename F>
+		void editWeight(Vertex vertex, bool updateQueue, F f) {
 			f();
 			if (updateQueue) {
 				this->vertexPriorityQueue->notifyComparisonChanged(vertex);

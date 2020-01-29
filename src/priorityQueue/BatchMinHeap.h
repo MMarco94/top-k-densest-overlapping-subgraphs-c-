@@ -2,41 +2,58 @@
 // Created by marco on 23/01/20.
 //
 
-#ifndef C___MINHEAP_H
-#define C___MINHEAP_H
+#ifndef C___BATCHMINHEAP_H
+#define C___BATCHMINHEAP_H
 
 #include <cstdint>
 #include <vector>
-#include "Graph.h"
-#include "utils.cpp"
+#include "../Graph.h"
+#include "../utils.cpp"
 
-class MinHeap {
+class BatchMinHeap {
 		const int size;
 		const std::vector<double> &backingWeights;
 		const std::vector<VectorizableBool> &isNotRemoved;
 		std::vector<Vertex> heap;
 		std::vector<int> reverseIndexes;
+
+		std::vector<VectorizableBool> changedPositions;
+		int largestChangedPosition;
 	public:
-		MinHeap(const int size, const std::vector<double> &backingWeights, const std::vector<VectorizableBool> &isNotRemoved) : size(size), backingWeights(backingWeights), isNotRemoved(isNotRemoved) {
+		BatchMinHeap(const int size, const std::vector<double> &backingWeights, const std::vector<VectorizableBool> &isNotRemoved) :
+				size(size), backingWeights(backingWeights), isNotRemoved(isNotRemoved), changedPositions(size / 2, true), largestChangedPosition(size / 2 - 1) {
 			this->heap.reserve(size);
 			this->reverseIndexes.reserve(size);
 			for (int i = 0; i < size; i++) {
 				this->heap.emplace_back(i);
 				this->reverseIndexes.emplace_back(i);
 			}
-			for (int pos = size / 2; pos >= 0; pos--) {
-				this->minHeapify(pos);
-			}
 		}
 
 		Vertex head() {
+			this->ensureChangesAreCommitted();
 			return this->heap[0];
+		}
+
+		void ensureChangesAreCommitted() {
+			for (int pos = this->largestChangedPosition; pos >= 0; pos--) {
+				if (this->changedPositions[pos]) {
+					if (!this->minHeapify(pos) && pos > 0) {
+						this->changedPositions[parent(pos)] = true;
+					}
+					this->changedPositions[pos] = false;
+				}
+			}
+			this->largestChangedPosition = -1;
 		}
 
 		void notifyComparisonChanged(Vertex vertex) {
 			int pos = this->reverseIndexes[vertex.id];
-			this->minHeapify(pos);
-			this->bubbleUp(pos);
+			if (pos > 0) {
+				pos = parent(pos);
+			}
+			this->largestChangedPosition = std::max(pos, this->largestChangedPosition);
+			this->changedPositions[pos] = true;
 		}
 
 	private:
@@ -71,22 +88,16 @@ class MinHeap {
 			this->heap[b] = ha;
 		}
 
-		void bubbleUp(int pos) {
-			int current = pos;
-			double currentWeight = this->getWeight(this->heap[pos]);
-			while (current > 0 && getWeight(this->heap[MinHeap::parent(pos)]) > currentWeight) {
-				swap(current, MinHeap::parent(current));
-				current = MinHeap::parent(current);
-			}
+		/**
+		 * @return Whether something changed
+		 */
+		bool minHeapify(int pos) {
+			return this->minHeapify(pos, this->getWeight(this->heap[pos]));
 		}
 
-		void minHeapify(int pos) {
-			this->minHeapify(pos, this->getWeight(this->heap[pos]));
-		}
-
-		void minHeapify(int pos, double posWeight) {
-			int leftChild = MinHeap::leftChild(pos);
-			int rightChild = MinHeap::rightChild(pos);
+		bool minHeapify(int pos, double posWeight) {
+			int leftChild = BatchMinHeap::leftChild(pos);
+			int rightChild = BatchMinHeap::rightChild(pos);
 			int hasLeftChild = leftChild < size;
 			int hasRightChild = rightChild < size;
 
@@ -100,9 +111,12 @@ class MinHeap {
 					this->swap(pos, leftChild);
 					this->minHeapify(leftChild, posWeight);
 				} else throw std::logic_error("Illegal state");
+				return true;
+			} else {
+				return false;
 			}
 		}
 
 };
 
-#endif //C___MINHEAP_H
+#endif //C___BATCHMINHEAP_H
