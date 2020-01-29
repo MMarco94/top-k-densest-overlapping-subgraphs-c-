@@ -29,7 +29,7 @@ class Peeler {
 			std::vector<int> ret;
 			ret.reserve(gSize);
 			for (int i = 0; i < gSize; i++) {
-				ret.emplace_back(graph->edgesMap[i].size());
+				ret.emplace_back(graph->connectedVertices[i].size());
 			}
 			return ret;
 		}
@@ -171,9 +171,8 @@ class Peeler {
 		template<typename F>
 		void forEachConnectedVertex(Vertex vertex, bool updateQueue, F f) {
 			int vertexCount = 0;
-			auto &edges = this->graph->edgesMap[vertex.id];
-			for (auto &e:edges) {
-				auto other = e.otherVertex(vertex);
+			auto &connectedVertices = this->graph->connectedVertices[vertex.id];
+			for (auto &other:connectedVertices) {
 				if (this->candidate.contains(other)) {
 					this->editWeight(other, updateQueue, [f, other]() {
 						f(other, 1);

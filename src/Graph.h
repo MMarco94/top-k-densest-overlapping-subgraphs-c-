@@ -43,13 +43,13 @@ class Graph {
 	public:
 		const int size;
 		const std::vector<Edge> &edges;
-		std::vector<std::vector<Edge>> edgesMap;
+		std::vector<std::vector<Vertex>> connectedVertices;
 
 	public:
-		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), edgesMap(size) {
+		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), connectedVertices(size) {
 			for (auto &e : this->edges) {
-				this->edgesMap[e.a.id].emplace_back(e);
-				this->edgesMap[e.b.id].emplace_back(e);
+				this->connectedVertices[e.a.id].emplace_back(e.b);
+				this->connectedVertices[e.b.id].emplace_back(e.a);
 			}
 		}
 
