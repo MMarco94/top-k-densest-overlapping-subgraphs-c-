@@ -195,8 +195,9 @@ class Peeler {
 				const auto &subGraph = this->subGraphs[i];
 				if (subGraph.contains(vertex)) {
 					sg(subGraph, i);
-					subGraph.forEachVertex([=](const Vertex &vv){
-						editWeight(vv, updateQueue, [f, &subGraph, vv]() {
+					subGraph.forEachVertex([=](const Vertex &vv) {
+						//It makes sense to reorganize the queue only if candidate is in vv. Otherwise the weight will remain Double.MAX_VALUE
+						editWeight(vv, updateQueue && candidate.contains(vv), [f, &subGraph, vv]() {
 							f(subGraph, vv);
 						});
 					});
