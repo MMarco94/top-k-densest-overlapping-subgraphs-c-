@@ -12,7 +12,7 @@ class Vertex {
 	public:
 		int id;
 
-		Vertex(int id) : id(id) {}
+		explicit Vertex(int id) : id(id) {}
 
 		bool operator==(const Vertex &rhs) const {
 			return id == rhs.id;
@@ -29,27 +29,20 @@ class Edge {
 		Vertex b;
 
 		Edge(const Vertex &a, const Vertex &b) : a(a), b(b) {}
-
-		[[nodiscard]] Vertex otherVertex(Vertex v) const {
-			if (a.id == v.id) {
-				return b;
-			} else {
-				return a;
-			}
-		}
 };
 
 class Graph {
 	public:
 		const int size;
 		const std::vector<Edge> &edges;
-		std::vector<std::vector<Vertex>> connectedVertices;
+		std::vector<std::vector<Vertex>> outConnections;
+		std::vector<std::vector<Vertex>> inConnections;
 
 	public:
-		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), connectedVertices(size) {
+		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), outConnections(size), inConnections(size) {
 			for (auto &e : this->edges) {
-				this->connectedVertices[e.a.id].emplace_back(e.b);
-				this->connectedVertices[e.b.id].emplace_back(e.a);
+				this->outConnections[e.a.id].emplace_back(e.b);
+				this->inConnections[e.b.id].emplace_back(e.a);
 			}
 		}
 

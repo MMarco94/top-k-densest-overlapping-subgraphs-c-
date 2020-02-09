@@ -58,6 +58,7 @@ class DOS {
 		}
 
 		[[nodiscard]] SubGraph peel(const std::vector<SubGraph> &subGraphs) const {
+			std::cout << "Peeling" << std::endl;
 			auto p = Peeler(this->graph, subGraphs, this->lambda);
 			BestSubGraphFinder finder(subGraphs, p.candidate);
 			while (p.candidate.size > 3) {

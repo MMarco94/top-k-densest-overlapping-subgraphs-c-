@@ -11,7 +11,7 @@
 #include "priorityQueue/LinearQueue.h"
 #include "priorityQueue/MinHeap.h"
 
-template<class T = BatchMinHeap>
+template<class T = MinHeap>
 class Peeler {
 	private:
 		std::shared_ptr<Graph> graph;
@@ -32,7 +32,7 @@ class Peeler {
 			std::vector<int> ret;
 			ret.reserve(gSize);
 			for (int i = 0; i < gSize; i++) {
-				ret.emplace_back(graph->connectedVertices[i].size());
+				ret.emplace_back(graph->outConnections[i].size() + graph->inConnections[i].size());
 			}
 			return ret;
 		}
@@ -108,7 +108,7 @@ class Peeler {
 			} else {
 				this->add(this->temporaryVertex, false);
 			}
-			this->temporaryVertex = -1;
+			this->temporaryVertex = Vertex(-1);
 		}
 
 	private:
@@ -157,8 +157,16 @@ class Peeler {
 		template<typename F>
 		void forEachConnectedVertex(Vertex vertex, bool updateQueue, F f) {
 			int vertexCount = 0;
-			auto &connectedVertices = this->graph->connectedVertices[vertex.id];
-			for (auto &other:connectedVertices) {
+			for (auto &other : this->graph->inConnections[vertex.id]) {
+				if (this->candidate.contains(other)) {
+					this->editWeight(other, updateQueue, [f, other]() {
+						f(other, 1);
+					});
+					vertexCount++;
+				}
+			}
+
+			for (auto &other : this->graph->outConnections[vertex.id]) {
 				if (this->candidate.contains(other)) {
 					this->editWeight(other, updateQueue, [f, other]() {
 						f(other, 1);
@@ -183,7 +191,7 @@ class Peeler {
 					sg(subGraph, i);
 					subGraph.forEachVertex([=](const Vertex &vv) {
 						//It makes sense to reorganize the queue only if candidate is in vv. Otherwise the weight will remain Double.MAX_VALUE
-						editWeight(vv, updateQueue && candidate.contains(vv), [f, &subGraph, vv]() {
+						editWeight(vv, updateQueue/* && candidate.contains(vv)*/, [f, &subGraph, vv]() {
 							f(subGraph, vv);
 						});
 					});
