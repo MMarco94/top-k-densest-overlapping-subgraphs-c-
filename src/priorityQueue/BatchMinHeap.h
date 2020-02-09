@@ -49,7 +49,7 @@ class BatchMinHeap {
 
 		void notifyComparisonChanged(Vertex vertex) {
 			int pos = this->reverseIndexes[vertex.id];
-			if (pos > 0) {
+			if (pos >= size / 2) {
 				pos = parent(pos);
 			}
 			this->largestChangedPosition = std::max(pos, this->largestChangedPosition);
