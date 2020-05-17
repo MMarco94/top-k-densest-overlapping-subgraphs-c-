@@ -74,7 +74,7 @@ class MinHeap {
 		void bubbleUp(int pos) {
 			int current = pos;
 			double currentWeight = this->getWeight(this->heap[pos]);
-			while (current > 0 && getWeight(this->heap[MinHeap::parent(pos)]) > currentWeight) {
+			while (current > 0 && getWeight(this->heap[MinHeap::parent(current)]) > currentWeight) {
 				swap(current, MinHeap::parent(current));
 				current = MinHeap::parent(current);
 			}
