@@ -9,10 +9,10 @@
 
 class MetricDistance {
 	public:
-		static double getDistance(const SubGraph &g1, const SubGraph &g2, const int intersectionSize) {
-			bool areEqual = g1.size == g2.size && g1.size == intersectionSize;
+		static double getDistance(int g1Size, int g2Size, const int intersectionSize) {
+			bool areEqual = g1Size == g2Size && g1Size == intersectionSize;
 			if (!areEqual) {
-				return 2 - intersectionSize * intersectionSize / (double) (g1.size * g2.size);
+				return 2 - intersectionSize * intersectionSize / (double) (g1Size * g2Size);
 			} else {
 				return 0.0;
 			}

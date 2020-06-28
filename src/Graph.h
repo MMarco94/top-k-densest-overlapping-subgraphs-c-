@@ -4,6 +4,7 @@
 #ifndef C___GRAPH_H
 #define C___GRAPH_H
 
+#include <utility>
 #include <vector>
 #include <memory>
 #include "utils.cpp"
@@ -35,15 +36,34 @@ class Graph {
 	public:
 		const int size;
 		const std::vector<Edge> &edges;
-		std::vector<std::vector<Vertex>> outConnections;
-		std::vector<std::vector<Vertex>> inConnections;
+		const std::vector<std::vector<Vertex>> connectionsMap;
+		const int maxDegree;
+
+		static std::vector<std::vector<Vertex>> _connectionsMap(int size, const std::vector<Edge> &edges) {
+			std::vector<std::vector<Vertex>> ret(size);
+			for (auto &e : edges) {
+				ret[e.a.id].emplace_back(e.b);
+				ret[e.b.id].emplace_back(e.a);
+			}
+			return ret;
+		}
+
+		static int _maxDegree(const std::vector<std::vector<Vertex>> &connectionsMap) {
+			int maxDegree = 0;
+			for (auto &n : connectionsMap) {
+				if (n.size() > maxDegree) {
+					maxDegree = n.size();
+				}
+			}
+			return maxDegree;
+		}
 
 	public:
-		Graph(int size, const std::vector<Edge> &edges) : size(size), edges(edges), outConnections(size), inConnections(size) {
-			for (auto &e : this->edges) {
-				this->outConnections[e.a.id].emplace_back(e.b);
-				this->inConnections[e.b.id].emplace_back(e.a);
-			}
+		Graph(int size, const std::vector<Edge> &edges) :
+				size(size),
+				edges(edges),
+				connectionsMap(_connectionsMap(size, edges)),
+				maxDegree(_maxDegree(connectionsMap)) {
 		}
 
 		static std::shared_ptr<Graph> getInstance(int size, const std::vector<Edge> &edges) {
@@ -121,6 +141,54 @@ class SubGraph {
 
 		bool operator!=(const SubGraph &rhs) const {
 			return !(rhs == *this);
+		}
+};
+
+class GraphSnapshot {
+	private:
+		int removalCount;
+		std::shared_ptr<Graph> graph;
+		std::shared_ptr<std::vector<Vertex>> removals;
+	public:
+		GraphSnapshot(int removalCount, std::shared_ptr<Graph> graph, std::shared_ptr<std::vector<Vertex>> removals) :
+				removalCount(removalCount),
+				graph(std::move(graph)),
+				removals(std::move(removals)) {}
+
+		SubGraph toSubGraph() {
+			SubGraph ret = SubGraph(this->graph);
+			for (int i = 0; i < removalCount; i++) {
+				ret.remove(removals->at(i));
+			}
+			return ret;
+		}
+};
+
+
+class SnapshottableSubGraph {
+	private:
+		SubGraph subGraph;
+		std::shared_ptr<std::vector<Vertex>> removals;
+
+	public:
+
+		explicit SnapshottableSubGraph(std::shared_ptr<Graph> parent) : subGraph(std::move(parent)) {}
+
+		[[nodiscard]] int size() const {
+			return subGraph.size;
+		}
+
+		[[nodiscard]] bool contains(Vertex vertex) const {
+			return subGraph.contains(vertex);
+		}
+
+		void remove(Vertex vertex) {
+			this->removals->emplace_back(vertex);
+			subGraph.remove(vertex);
+		}
+
+		[[nodiscard]] GraphSnapshot snapshot() const {
+			return GraphSnapshot(this->removals->size(), this->subGraph.parent, this->removals);
 		}
 };
 

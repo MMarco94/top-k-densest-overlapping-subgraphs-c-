@@ -96,7 +96,7 @@ int main() {
 
 	std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 	const auto &graph = std::make_shared<Graph>(max.id + 1, edges);
-	const auto &subGraphs = DOS(graph, 0.25).getOverlappingSubGraphs(10);
+	const auto &subGraphs = DOS(graph, 0.25).getOverlappingSubGraphs(20);
 	std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 	std::cout << "Took = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "µs" << std::endl;
 
